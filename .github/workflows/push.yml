@@ -1,46 +1,46 @@
-name: Sync Bundles
-
-on: [push, workflow_dispatch]
-
-jobs:
-  sync:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        target:
-          - name: Flood
-            srcDir: "Flood"
-            repo: "WMF-Industries/floodmoment4"
-            destDir: "core/assets/flood/bundles"
-          - name: FloodCompat
-            srcDir: "FloodCompat"
-            repo: "mindustry-antigrief/floodCompat"
-            destDir: "assets/bundles"
-          - name: Tower Defense
-            srcDir: "Tower Defense"
-            repo: "WMF-Industries/tdmoment1"
-            destDir: "core/assets/defense/bundles"
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Sync ${{ matrix.target.name }} bundles
-        env:
-          SYNC_TOKEN: ${{ secrets.SYNC_TOKEN }}
-        run: |
-          set -euo pipefail
-          workdir="$(mktemp -d)"
-          trap 'rm -rf "$workdir"' EXIT
-          git clone --depth 1 "https://x-access-token:${SYNC_TOKEN}@github.com/${{ matrix.target.repo }}.git" "${workdir}"
-          mkdir -p "${workdir}/${{ matrix.target.destDir }}"
-          rsync -a --delete "${{ matrix.target.srcDir }}/" "${workdir}/${{ matrix.target.destDir }}/"
-          if git -C "${workdir}" diff --quiet; then
-            echo "No changes for ${{ matrix.target.name }}."
-            exit 0
-          fi
-          git -C "${workdir}" config user.name "Github Actions"
-          git -C "${workdir}" config user.email "actions@github.com"
-          git -C "${workdir}" add -A
-          git -C "${workdir}" commit -m "Sync bundles from gamemode-translations [skip ci]"
-          git -C "${workdir}" push
+#name: Sync Bundles
+#
+#on: [push, workflow_dispatch]
+#
+#jobs:
+#  sync:
+#    runs-on: ubuntu-latest
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        target:
+#          - name: Flood
+#            srcDir: "Flood"
+#            repo: "WMF-Industries/floodmoment4"
+#            destDir: "core/assets/flood/bundles"
+#          - name: FloodCompat
+#            srcDir: "FloodCompat"
+#            repo: "mindustry-antigrief/floodCompat"
+#            destDir: "assets/bundles"
+#          - name: Tower Defense
+#            srcDir: "Tower Defense"
+#            repo: "WMF-Industries/tdmoment1"
+#            destDir: "core/assets/defense/bundles"
+#
+#    steps:
+#      - uses: actions/checkout@v4
+#
+#      - name: Sync ${{ matrix.target.name }} bundles
+#        env:
+#          SYNC_TOKEN: ${{ secrets.SYNC_TOKEN }}
+#        run: |
+#          set -euo pipefail
+#          workdir="$(mktemp -d)"
+#          trap 'rm -rf "$workdir"' EXIT
+#          git clone --depth 1 "https://x-access-token:${SYNC_TOKEN}@github.com/${{ matrix.target.repo }}.git" "${workdir}"
+#          mkdir -p "${workdir}/${{ matrix.target.destDir }}"
+#          rsync -a --delete "${{ matrix.target.srcDir }}/" "${workdir}/${{ matrix.target.destDir }}/"
+#          if git -C "${workdir}" diff --quiet; then
+#            echo "No changes for ${{ matrix.target.name }}."
+#            exit 0
+#          fi
+#          git -C "${workdir}" config user.name "Github Actions"
+#          git -C "${workdir}" config user.email "actions@github.com"
+#          git -C "${workdir}" add -A
+#          git -C "${workdir}" commit -m "Sync bundles from gamemode-translations [skip ci]"
+#          git -C "${workdir}" push
